@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories and Space</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+
+    <header class="bg-white/80 shadow-md sticky top-0 z-20 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <div class="text-2xl md:text-3xl font-extrabold text-pastel-primary tracking-tight">
+                Stories & Space
+            </div>
+
+            <nav class="hidden md:flex space-x-8">
+                <button onclick="changeView('feed')" id="nav-feed" class="nav-button transition duration-150 ease-in-out text-pastel-text border-b-2 border-transparent hover:border-pastel-primary focus:outline-none py-2 px-1">
+                    <div class="flex items-center">
+                        <i data-lucide="layout-list" class="w-5 h-5 mr-2"></i> Feed
+                    </div>
+                </button>
+                <button onclick="changeView('write')" id="nav-write" class="nav-button transition duration-150 ease-in-out text-pastel-text border-b-2 border-transparent hover:border-pastel-primary focus:outline-none py-2 px-1">
+                    <div class="flex items-center">
+                        <i data-lucide="feather" class="w-5 h-5 mr-2"></i> Write
+                    </div>
+                </button>
+                <button onclick="changeView('match')" id="nav-match" class="nav-button transition duration-150 ease-in-out text-pastel-text border-b-2 border-transparent hover:border-pastel-primary focus:outline-none py-2 px-1">
+                    <div class="flex items-center">
+                        <i data-lucide="star" class="w-5 h-5 mr-2"></i> Find Comfort
+                    </div>
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                <div class="relative group p-2 rounded-full hover:bg-pastel-input transition">
+                    <button class="flex items-center text-pastel-text focus:outline-none" id="current-language-display">
+                        <i data-lucide="globe" class="w-5 h-5"></i>
+                        <span id="current-language-display-text" class="ml-1 text-sm hidden sm:inline">Language: All</span>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-40 bg-white/90 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-300 ring-1 ring-pastel-primary/20 z-30">
+                        <a href="#" onclick="applyLanguageFilter('all'); return false;" id="filter-link-all" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-t-lg">All Languages</a>
+                        <a href="#" onclick="applyLanguageFilter('english'); return false;" id="filter-link-english" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">English</a>
+                        <a href="#" onclick="applyLanguageFilter('hindi'); return false;" id="filter-link-hindi" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">Hindi (हिंदी)</a>
+                        <a href="#" onclick="applyLanguageFilter('bengali'); return false;" id="filter-link-bengali" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-b-lg">Bengali (বাংলা)</a>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <button class="bg-pastel-primary text-white p-2 rounded-full hover:bg-pastel-primary/90 transition shadow-md focus:outline-none">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-max min-w-40 bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 ring-2 ring-pastel-primary/20 p-4 text-xs text-pastel-text z-30">
+                        <p class="font-semibold mb-1 text-base">Profile Status</p>
+                        <p id="profile-status-text" class="text-gray-600">Initializing...</p>
+                        <hr class="my-2 border-pastel-input"/>
+                        <button class="flex items-center text-red-500 hover:text-red-700 w-full justify-start mt-1">
+                             <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Log Out (Mock)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="md:hidden flex justify-around border-t border-pastel-input bg-white/80 py-2">
+            <button onclick="changeView('feed')" id="nav-mobile-feed" class="nav-button flex-1 text-center py-1 text-pastel-text hover:text-pastel-primary focus:outline-none">
+                <i data-lucide="layout-list" class="w-5 h-5 mx-auto"></i><span class="text-xs">Feed</span>
+            </button>
+            <button onclick="changeView('write')" id="nav-mobile-write" class="nav-button flex-1 text-center py-1 text-pastel-text hover:text-pastel-primary focus:outline-none">
+                <i data-lucide="feather" class="w-5 h-5 mx-auto"></i><span class="text-xs">Write</span>
+            </button>
+            <button onclick="changeView('match')" id="nav-mobile-match" class="nav-button flex-1 text-center py-1 text-pastel-text hover:text-pastel-primary focus:outline-none">
+                <i data-lucide="star" class="w-5 h-5 mx-auto"></i><span class="text-xs">Comfort</span>
+            </button>
+        </nav>
+    </header>
+
+    <div id="app-message-container" class="fixed top-20 right-4 z-50 w-full max-w-sm"></div>
+
+    <main class="flex justify-center p-4 sm:p-6 lg:p-8 pt-20 sm:pt-24">
+        <div class="main-content-area">
+
+            <section id="feed" class="content-section">
+                <h1 class="text-3xl font-bold mb-6 text-pastel-text">Community Feed</h1>
+                <div id="feed-posts-container">
+                    <div class="p-8 text-center bg-white/80 rounded-xl shadow-lg ring-1 ring-pastel-primary/10" id="feed-loading-state">
+                        <i data-lucide="loader-circle" class="w-8 h-8 mx-auto text-pastel-primary animate-spin mb-3"></i>
+                        <p class="text-lg font-semibold text-pastel-text">Loading posts...</p>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <button id="view-more-button" onclick="loadMorePosts()" class="bg-pastel-accent text-white font-semibold py-2 px-6 rounded-full shadow-md hover:bg-pastel-accent/90 transition hidden">View More Stories</button>
+                </div>
+            </section>
+
+            <section id="write" class="content-section">
+                <h1 class="text-3xl font-bold mb-6 text-pastel-text">Share Your Voice</h1>
+                <div class="bg-white/80 p-6 rounded-xl shadow-lg ring-1 ring-pastel-primary/10">
+                    <p class="text-sm text-gray-500 mb-4">Choose the language you are writing in below.</p>
+                    <input id="post-title" type="text" placeholder="Title of your blog post..." class="w-full p-3 mb-4 rounded-lg bg-pastel-input border border-pastel-primary/30 focus:border-pastel-primary focus:ring-pastel-primary focus:ring-1 outline-none transition" />
+                    <textarea id="post-content" placeholder="Start writing your story here..." rows="12" class="w-full p-4 mb-6 rounded-lg bg-pastel-input border border-pastel-primary/30 focus:border-pastel-primary focus:ring-pastel-primary focus:ring-1 outline-none transition"></textarea>
+                    <div class="flex justify-between items-center">
+                        <select id="post-language" class="p-2 rounded-lg bg-pastel-input border border-pastel-primary/30 text-pastel-text">
+                            <option value="english">English</option>
+                            <option value="hindi">Hindi (हिंदी)</option>
+                            <option value="bengali">Bengali (বাংলা)</option>
+                        </select>
+                        <button id="publish-button" class="bg-gray-400 text-white font-semibold py-3 px-8 rounded-full shadow-lg opacity-50 cursor-not-allowed transition transform hover:scale-[1.02]" disabled>
+                            <i data-lucide="loader-circle" class="w-5 h-5 inline mr-2 animate-spin"></i> Initializing...
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="match" class="content-section">
+                <h1 class="text-3xl font-bold mb-6 text-pastel-text">Find Comfort: Poems & Books</h1>
+                <div class="bg-white/80 p-6 rounded-xl shadow-lg ring-1 ring-pastel-primary/10">
+                    <p class="text-lg text-pastel-text mb-4">Describe your current situation or feeling. We'll find you the perfect poems and books in your language.</p>
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6">
+                        <select id="match-language" class="flex-shrink-0 p-3 rounded-lg bg-pastel-input border border-pastel-primary/30 text-pastel-text">
+                            <option value="hindi">Hindi (हिंदी)</option>
+                            <option value="bengali">Bengali (বাংলা)</option>
+                            <option value="english" selected>English</option>
+                        </select>
+                        <textarea id="situation-input" placeholder="E.g., Feeling overwhelmed after a long day at work, or, celebrating a small personal victory." rows="3" class="w-full p-3 rounded-lg bg-pastel-input border border-pastel-primary/30 focus:border-pastel-primary focus:ring-pastel-primary focus:ring-1 outline-none transition">Feeling nostalgic and a little lonely.</textarea>
+                    </div>
+                    <button id="match-button" class="w-full bg-pastel-primary text-white font-semibold py-3 rounded-full shadow-lg hover:bg-pastel-primary/90 transition transform hover:scale-[1.02]">
+                        <i data-lucide="sparkles" class="w-5 h-5 inline mr-2"></i> Find Comfort Now
+                    </button>
+                </div>
+                <div id="match-results" class="mt-8">
+                    <h3 class="text-xl font-semibold mb-4 text-pastel-text">Recommendations:</h3>
+                    <div id="match-results-content">
+                        <div class="p-6 text-center bg-white/80 rounded-xl shadow-lg ring-1 ring-pastel-accent/20">
+                            <i data-lucide="search" class="w-8 h-8 mx-auto text-pastel-primary mb-3"></i>
+                            <p class="text-lg font-semibold text-pastel-text">What are you feeling today?</p>
+                            <p class="text-sm text-gray-500 mt-1">Describe your mood and click 'Find Comfort Now' to receive personalized literary recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="summary-results" class="content-section">
+                <h1 class="text-3xl font-bold mb-6 text-pastel-text" id="summary-header">Post Summary Analysis</h1>
+                <div id="summary-results-content">
+                    <div class="p-6 text-center bg-white/80 rounded-xl shadow-lg ring-1 ring-pastel-accent/20">
+                        <i data-lucide="zap" class="w-8 h-8 mx-auto text-pastel-primary mb-3"></i>
+                        <p class="text-lg font-semibold text-pastel-text">Post analysis will appear here.</p>
+                        <p class="text-sm text-gray-500 mt-1">Select a post from the Feed and click 'Summarize' to get a breakdown.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 relative transform transition-all duration-300">
+            <button onclick="window.closeModal()" class="absolute top-4 right-4 text-pastel-text hover:text-red-500 transition focus:outline-none p-2 rounded-full bg-pastel-input/50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="flex items-center justify-between border-b border-pastel-input pb-3 mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="text-sm font-semibold text-pastel-primary">Author ID:</span>
+                    <span id="modal-author-id" class="text-sm text-pastel-text ml-1">...</span>
+                </div>
+                <div class="flex space-x-3 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                        <span id="modal-date">...</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i data-lucide="globe" class="w-4 h-4 mr-1"></i>
+                        <span id="modal-language" class="font-medium">...</span>
+                    </div>
+                </div>
+            </div>
+            <h2 id="modal-title" class="text-3xl font-extrabold mb-4 text-pastel-primary break-words">Post Title</h2>
+            <div id="modal-content" class="text-base text-pastel-text whitespace-pre-wrap leading-relaxed">Loading post content...</div>
+            <div class="mt-6 pt-4 border-t border-pastel-input flex gap-4">
+                <button onclick="window.closeModal()" class="flex-1 bg-gray-400 text-white font-semibold py-3 rounded-full shadow-md hover:bg-gray-500 transition transform hover:scale-[1.01]">
+                    <i data-lucide="log-out" class="w-5 h-5 inline mr-1"></i> Close
+                </button>
+                <button id="summarize-button" onclick="window.startSummaryGeneration(this.getAttribute('data-post-id'))" data-post-id="" class="flex-1 bg-pastel-accent text-white font-semibold py-3 rounded-full shadow-md hover:bg-pastel-accent/90 transition transform hover:scale-[1.01]">
+                    <i data-lucide="brain" class="w-5 h-5 inline mr-1"></i> Summarize
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+    <script>
+        // Inline UI helper functions
+        function changeView(viewId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            const newView = document.getElementById(viewId);
+            if (newView) newView.classList.add('active');
+
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active', 'text-pastel-primary', 'font-semibold');
+                button.classList.add('text-pastel-text');
+                button.style.borderBottom = '2px solid transparent';
+            });
+            
+            const navElements = [document.getElementById(`nav-${viewId}`), document.getElementById(`nav-mobile-${viewId}`)];
+            const primaryColor = '#9AA8D6'; 
+
+            navElements.forEach(nav => {
+                if (nav) {
+                    nav.classList.add('active', 'text-pastel-primary', 'font-semibold');
+                    nav.classList.remove('text-pastel-text');
+                    if (nav.id.startsWith('nav-')) nav.style.borderBottom = `2px solid ${primaryColor}`;
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function displayMessage(message, isError = false) {
+            const messageContainer = document.getElementById('app-message-container');
+            if (!messageContainer) return;
+            const bgColor = isError ? 'bg-red-500' : 'bg-pastel-accent';
+            const icon = isError ? 'x-circle' : 'check-circle';
+            messageContainer.innerHTML = `<div class="${bgColor} text-white p-4 rounded-lg shadow-xl mb-4 flex items-center"><i data-lucide="${icon}" class="w-5 h-5 mr-3"></i><span>${message}</span></div>`;
+            if (window.lucide) lucide.createIcons();
+            setTimeout(() => { messageContainer.innerHTML = ''; }, 5000);
+        }
+        
+        // Expose to window for inline onclick handlers
+        window.changeView = changeView;
+        window.displayMessage = displayMessage;
+    </script>
+</body>
+</html>

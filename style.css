@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Configure Tailwind Customizations */
+:root {
+    --pastel-bg: #FFF8F9;
+    --pastel-card: #FFFFFF;
+    --pastel-primary: #9AA8D6;
+    --pastel-accent: #9AC8A0;
+    --pastel-text: #4F3F3F;
+    --pastel-input: #F5E6E8;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-image: url('https://iili.io/KeAGnRe.jpg'); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    color: #4F3F3F;
+    background-attachment: scroll; 
+    position: relative; 
+}
+
+/* Grain Effect Overlay */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'%3E%3C/feTurbulence%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'%3E%3C/rect%3E%3C/svg%3E");
+    pointer-events: none; 
+    z-index: 1; 
+    opacity: 0.1; 
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #9AA8D6;
+    border-radius: 10px;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.nav-button.active {
+    color: #9AA8D6;
+    border-bottom: 2px solid #9AA8D6;
+    font-weight: 600;
+}
+
+.main-content-area {
+    max-width: 100%;
+    padding: 1rem;
+    z-index: 10; 
+    position: relative;
+}
+
+@media (min-width: 640px) {
+    .main-content-area {
+        max-width: 768px;
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-content-area {
+        max-width: 1024px;
+        padding: 2rem;
+    }
+}
+
+/* Tailwind extend substitutes */
+.text-pastel-primary { color: #9AA8D6; }
+.bg-pastel-primary { background-color: #9AA8D6; }
+.text-pastel-text { color: #4F3F3F; }
+.bg-pastel-input { background-color: #F5E6E8; }
+.border-pastel-primary\/30 { border-color: rgba(154, 168, 214, 0.3); }
+.bg-pastel-accent { background-color: #9AC8A0; }
+.text-pastel-accent { color: #9AC8A0; }
+.border-pastel-input { border-color: #F5E6E8; }

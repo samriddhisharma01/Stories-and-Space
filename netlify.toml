@@ -1,0 +1,13 @@
+[build]
+  # This is the folder that contains your index.html
+  publish = "."
+  
+  # This is where your secret Gemini code lives
+  functions = "netlify/functions"
+
+[dev]
+  # This opens your site at http://localhost:9000
+  port = 9000
+  
+  # This tells Netlify to serve your main folder
+  publish = "."
