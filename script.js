@@ -235,7 +235,8 @@ window.renderPosts = (posts) => {
                 <div class="flex items-center mb-4">
                     <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-lg">${authorInitial}</div>
                     <div class="ml-3">
-                        <p class="font-semibold text-pastel-text">${post.authorName || 'Anonymous'}</p>
+                        <p class="font-semibold text-pastel-text cursor-pointer hover:text-pastel-primary transition"
+                        onclick="window.viewUserProfile('${post.authorName}')">${post.authorName || 'Anonymous'}</p>
                         <p class="text-xs text-gray-500">${formattedTime} • ${displayLanguage}</p>
                     </div>
                 </div>
@@ -534,7 +535,46 @@ window.setDisplayName = async () => {
     window.auth.currentUser.reload();
 };
 
+window.searchUser = () => {
+    const q = document.getElementById('user-search-input').value.trim().toLowerCase();
+    if (!q) return;
+    const match = window.allPosts.find(post => (post.authorName || '').toLowerCase().includes(q));
+    if (!match) {
+        displayMessage(`No users found matching "${q}"`, true);
+        return;
+    }
+    window.viewUserProfile(match.authorName);
+};
 
+window.viewUserProfile = (authorName) => {
+    const userPosts = window.allPosts.filter(post => post.authorName === authorName);
+    document.getElementById('profile-avatar').textContent = (authorName || '?')[0].toUpperCase();
+    document.getElementById('profile-username').textContent = authorName;
+    document.getElementById('profile-post-count').textContent = `${userPosts.length} post${userPosts.length !== 1 ? 's' : ''}`;
+
+    const container = document.getElementById('user-profile-posts');
+    container.innerHTML = '';
+
+    if (userPosts.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center bg-white/80 rounded-xl">No posts yet.</div>`;
+    } else {
+        userPosts.forEach(post => {
+            const date = post.timestamp?.toDate ? post.timestamp.toDate() : new Date();
+            const formattedTime = date.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+            container.innerHTML += `
+                <div class="bg-white/80 p-6 rounded-xl shadow-lg mb-4 ring-1 ring-pastel-primary/10">
+                    <p class="text-xs text-gray-500 mb-1">${formattedTime} • ${post.language}</p>
+                    <h2 class="text-xl font-bold mb-2 text-pastel-primary">${post.title}</h2>
+                    <p class="text-sm text-pastel-text/90 mb-3 line-clamp-3">${post.content}</p>
+                    <button onclick="window.openPostModal('${post.id}')" class="text-sm font-medium text-pastel-accent hover:text-pastel-primary transition">
+                        Read Full Post →
+                    </button>
+                </div>`;
+        });
+    }
+    window.changeView('user-profile');
+    if (window.lucide) lucide.createIcons();
+};
 // Expose functions to the HTML buttons
 window.changeView = changeView;
 window.applyLanguageFilter = applyLanguageFilter;
