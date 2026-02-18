@@ -18,8 +18,15 @@ window.currentPage = 1; // Tracks how many pages have been loaded
 // -------------------------------------------------------
 
 
-import { FIREBASE_CONFIG } from './config.js';
-const app = initializeApp(FIREBASE_CONFIG);
+const FIREBASE_CONFIG = {
+    authDomain: "spaceandstories-65215.firebaseapp.com",
+    projectId: "spaceandstories-65215",
+    storageBucket: "spaceandstories-65215.firebasestorage.app",
+    messagingSenderId: "1034945453909",
+    appId: "1:1034945453909:web:ff40a60be6d58fc6e3d9dc",
+    measurementId: "G-8Y8YRP3NSL"
+}
+
 const APP_ID = FIREBASE_CONFIG.projectId || 'default-app-id';
 
 function setPublishButtonState(ready, userId) {
