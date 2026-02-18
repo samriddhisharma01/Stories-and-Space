@@ -35,31 +35,55 @@
             </nav>
 
             <div class="flex items-center space-x-4">
-                <div class="relative group p-2 rounded-full hover:bg-pastel-input transition">
-                    <button class="flex items-center text-pastel-text focus:outline-none" id="current-language-display">
-                        <i data-lucide="globe" class="w-5 h-5"></i>
-                        <span id="current-language-display-text" class="ml-1 text-sm hidden sm:inline">Language: All</span>
-                    </button>
-                    <div class="absolute right-0 mt-2 w-40 bg-white/90 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-300 ring-1 ring-pastel-primary/20 z-30">
-                        <a href="#" onclick="applyLanguageFilter('all'); return false;" id="filter-link-all" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-t-lg">All Languages</a>
-                        <a href="#" onclick="applyLanguageFilter('english'); return false;" id="filter-link-english" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">English</a>
-                        <a href="#" onclick="applyLanguageFilter('hindi'); return false;" id="filter-link-hindi" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">Hindi (हिंदी)</a>
-                        <a href="#" onclick="applyLanguageFilter('bengali'); return false;" id="filter-link-bengali" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-b-lg">Bengali (বাংলা)</a>
+            <div class="relative group p-2 rounded-full hover:bg-pastel-input transition">
+                <button class="flex items-center text-pastel-text focus:outline-none" id="current-language-display">
+                    <i data-lucide="globe" class="w-5 h-5"></i>
+                    <span id="current-language-display-text" class="ml-1 text-sm hidden sm:inline">Language: All</span>
+                </button>
+                <div class="absolute right-0 mt-2 w-40 bg-white/90 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-300 ring-1 ring-pastel-primary/20 z-30">
+                    <a href="#" onclick="applyLanguageFilter('all'); return false;" id="filter-link-all" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-t-lg">All Languages</a>
+                    <a href="#" onclick="applyLanguageFilter('english'); return false;" id="filter-link-english" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">English</a>
+                    <a href="#" onclick="applyLanguageFilter('hindi'); return false;" id="filter-link-hindi" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50">Hindi (हिंदी)</a>
+                    <a href="#" onclick="applyLanguageFilter('bengali'); return false;" id="filter-link-bengali" class="language-filter block px-4 py-2 text-sm text-pastel-text hover:bg-pastel-input/50 rounded-b-lg">Bengali (বাংলা)</a>
+                </div>
+            </div>
+
+            <div class="relative group">
+                <button class="bg-pastel-primary text-white p-2 rounded-full hover:bg-pastel-primary/90 transition shadow-md focus:outline-none">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </button>
+
+                <div class="absolute right-0 mt-2 w-max min-w-48 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 ring-2 ring-pastel-primary/20 p-4 z-30">
+                    <p class="font-semibold mb-2 text-base text-pastel-primary">Profile Status</p>
+                    
+                    <div id="auth-ui-container">
+                    <p id="profile-status-text" class="text-gray-600 text-xs mb-3">Not signed in</p>
+                    
+                    <!-- Tab switcher -->
+                    <div class="flex mb-3 border-b border-pastel-input">
+                        <button onclick="window.showAuthTab('login')" id="tab-login" class="flex-1 text-xs py-1 font-semibold text-pastel-primary border-b-2 border-pastel-primary">Login</button>
+                        <button onclick="window.showAuthTab('signup')" id="tab-signup" class="flex-1 text-xs py-1 text-gray-400">Sign Up</button>
                     </div>
+                    
+                    <!-- Email/password fields -->
+                    <input id="auth-email" type="email" placeholder="Email" class="w-full text-xs p-2 mb-2 rounded-lg bg-pastel-input border border-pastel-primary/30 outline-none"/>
+                    <input id="auth-password" type="password" placeholder="Password" class="w-full text-xs p-2 mb-3 rounded-lg bg-pastel-input border border-pastel-primary/30 outline-none"/>
+                    
+                    <!-- Name field (sign up only) -->
+                    <input id="auth-name" type="text" placeholder="Display name" class="w-full text-xs p-2 mb-3 rounded-lg bg-pastel-input border border-pastel-primary/30 outline-none hidden"/>
+                    
+                    <button id="auth-submit-btn" onclick="window.handleEmailAuth()" class="w-full bg-pastel-primary text-white text-xs py-2 px-3 rounded-lg mb-2 hover:bg-pastel-primary/90 transition">Login</button>
+                    
+                    <div class="flex items-center my-2"><div class="flex-1 h-px bg-pastel-input"></div><span class="text-xs text-gray-400 mx-2">or</span><div class="flex-1 h-px bg-pastel-input"></div></div>
+                    
+                    <button id="login-button" onclick="window.signInWithGoogle()" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition shadow-sm text-xs font-medium">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" alt="Google Logo">
+                        Sign in with Google
+                    </button>
                 </div>
 
-                <div class="relative group">
-                    <button class="bg-pastel-primary text-white p-2 rounded-full hover:bg-pastel-primary/90 transition shadow-md focus:outline-none">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </button>
-                    <div class="absolute right-0 mt-2 w-max min-w-40 bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 ring-2 ring-pastel-primary/20 p-4 text-xs text-pastel-text z-30">
-                        <p class="font-semibold mb-1 text-base">Profile Status</p>
-                        <p id="profile-status-text" class="text-gray-600">Initializing...</p>
-                        <hr class="my-2 border-pastel-input"/>
-                        <button class="flex items-center text-red-500 hover:text-red-700 w-full justify-start mt-1">
-                             <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Log Out (Mock)
-                        </button>
-                    </div>
+                    <div id="user-info-container" class="hidden">
+                        </div>
                 </div>
             </div>
         </div>
@@ -162,7 +186,7 @@
             </button>
             <div class="flex items-center justify-between border-b border-pastel-input pb-3 mb-4 flex-wrap gap-2">
                 <div>
-                    <span class="text-sm font-semibold text-pastel-primary">Author ID:</span>
+                    <span class="text-sm font-semibold text-pastel-primary">By:</span>
                     <span id="modal-author-id" class="text-sm text-pastel-text ml-1">...</span>
                 </div>
                 <div class="flex space-x-3 text-sm text-gray-500">

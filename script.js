@@ -1,7 +1,23 @@
 // Import the necessary Firebase functions
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    GoogleAuthProvider, 
+    signInWithPopup,
+    createUserWithEmailAndPassword,   
+    signInWithEmailAndPassword,        
+    updateProfile  
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    onSnapshot, 
+    query, 
+    setLogLevel 
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- CONSTANTS AND GLOBAL STATE ---
 const PUBLIC_COLLECTION_NAME = 'blogs';
@@ -19,6 +35,7 @@ window.currentPage = 1; // Tracks how many pages have been loaded
 
 
 const FIREBASE_CONFIG = {
+    apiKey:"AIzaSyB0kRQlH9WGg6oWoWZPMwDmfss5m1TT9ZY",
     authDomain: "spaceandstories-65215.firebaseapp.com",
     projectId: "spaceandstories-65215",
     storageBucket: "spaceandstories-65215.firebasestorage.app",
@@ -49,60 +66,69 @@ function setPublishButtonState(ready, userId) {
 
 window.initializeFirebase = async () => {
     const statusElement = document.getElementById('profile-status-text');
+    // These IDs match the HTML we updated earlier
+    const authUI = document.getElementById('auth-ui-container');
+    const userInfo = document.getElementById('user-info-container');
+    
     setPublishButtonState(false); 
 
     try {
         const app = initializeApp(FIREBASE_CONFIG);
         const db = getFirestore(app);
-        setLogLevel('debug'); 
         const auth = getAuth(app);
         
         window.db = db;
         window.auth = auth;
         window.appId = APP_ID; 
-        
-        let userId = null;
-        await new Promise(resolve => {
-            const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                } else {
-                    try {
-                        const anonUser = await signInAnonymously(auth);
-                        userId = anonUser.user.uid;
-                    } catch (error) {
-                        console.error("Anonymous Authentication failed:", error);
-                        if (statusElement) {
-                            if (error.code === 'auth/configuration-not-found') {
-                                 statusElement.innerHTML = `<span class="text-red-500 font-bold">AUTH ERROR:</span> Anonymous sign-in is NOT enabled.`;
-                                 displayMessage("Authentication failed. Please check Firebase settings.", true);
-                            } else {
-                                 statusElement.textContent = `Auth Error: ${error.code || error.message}`;
-                            }
-                        }
-                        setPublishButtonState(false);
-                        resolve(); 
-                        unsubscribe();
-                        return;
-                    }
+
+        // Listen for Auth changes (Google Login or Logout)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // USER IS LOGGED IN
+                window.userId = user.uid;
+                window.isFirebaseReady = true;
+                setPublishButtonState(true, user.uid);
+
+                // Update UI for Logged In State
+                if (authUI) authUI.classList.add('hidden');
+                if (userInfo) {
+                    userInfo.classList.remove('hidden');
+                    const nameRow = !user.displayName ? `
+                    <div class="mt-2">
+                        <input id="set-name-input" type="text" placeholder="Set your display name" class="w-full text-xs p-2 mb-1 rounded bg-pastel-input border border-pastel-primary/30 outline-none"/>
+                        <button onclick="window.setDisplayName()" class="w-full text-xs bg-pastel-primary text-white py-1 rounded hover:bg-pastel-primary/90">Save Name</button>
+                    </div>` : '';
+                    userInfo.innerHTML = `
+                        <p class="text-sm font-medium text-pastel-text mb-1 truncate">Hi, ${user.displayName || 'Explorer'}</p>
+                        <hr class="my-2 border-pastel-input"/>
+                        <button onclick="window.auth.signOut()" class="flex items-center text-red-500 hover:text-red-700 w-full justify-start text-xs">
+                             <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Log Out
+                        </button>
+                    `;
+                    if (window.lucide) lucide.createIcons();
                 }
+                if (statusElement) statusElement.innerHTML = `<span class="text-green-600 font-bold">Logged In</span>`;
                 
-                if (userId) {
-                    window.userId = userId;
-                    window.isFirebaseReady = true; 
-                    setPublishButtonState(true, userId); 
-                    if (statusElement) statusElement.innerHTML = `<span class="font-normal text-pastel-primary">User ID:</span> ${userId.substring(0, 8)}...<br>(Full ID: ${userId})`;
-                    window.setupPostListener(db, APP_ID);
-                }
-                document.body.classList.add('firebase-ready');
-                unsubscribe(); 
-                resolve();
-            });
+            } else {
+                // USER IS LOGGED OUT
+                window.userId = null;
+                window.isFirebaseReady = false;
+                setPublishButtonState(false);
+
+                // Update UI for Logged Out State
+                if (authUI) authUI.classList.remove('hidden');
+                if (userInfo) userInfo.classList.add('hidden');
+                if (statusElement) statusElement.innerHTML = `Not signed in`;
+            }
+
+            // Always start the listener so everyone can see the feed
+            window.setupPostListener(db, APP_ID);
+            document.body.classList.add('firebase-ready');
         });
+
     } catch (error) {
         console.error("Fatal error during Firebase initialization:", error);
         if (statusElement) statusElement.textContent = `Initialization Failed: ${error.message}`;
-        setPublishButtonState(false);
     }
 };
 
@@ -198,7 +224,7 @@ window.renderPosts = (posts) => {
     }
 
     posts.forEach(post => {
-        const authorInitial = post.userId ? post.userId[0].toUpperCase() : '?';
+        const authorInitial = (post.authorName || post.userId || '?')[0].toUpperCase();
         const date = post.timestamp?.toDate ? post.timestamp.toDate() : new Date();
         const formattedTime = date.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
         const displayLanguage = post.language.charAt(0).toUpperCase() + post.language.slice(1);
@@ -209,14 +235,14 @@ window.renderPosts = (posts) => {
                 <div class="flex items-center mb-4">
                     <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-lg">${authorInitial}</div>
                     <div class="ml-3">
-                        <p class="font-semibold text-pastel-text">Anonymous User (<span class="text-sm">${(post.userId || 'unknown').substring(0, 6)}...</span>)</p>
+                        <p class="font-semibold text-pastel-text">${post.authorName || 'Anonymous'}</p>
                         <p class="text-xs text-gray-500">${formattedTime} • ${displayLanguage}</p>
                     </div>
                 </div>
                 <h2 class="text-xl font-bold mb-2 text-pastel-primary">${post.title}</h2>
                 <p class="text-sm text-pastel-text/90 mb-4 line-clamp-3">${post.content}</p>
                 <button onclick="window.openPostModal('${post.id}')" class="text-sm font-medium text-pastel-accent hover:text-pastel-primary transition focus:outline-none">
-                    Read Full Post (ID: ${(post.id || 'unknown').substring(0, 6)}...)
+                    Read Full Post →
                 </button>
             </div>`;
         feedContainer.innerHTML += postHtml;
@@ -241,7 +267,16 @@ window.publishPost = async function() {
 
     try {
         const postsCollectionRef = collection(window.db, `artifacts/${window.appId}/public/data/${PUBLIC_COLLECTION_NAME}`);
-        const newPost = { userId: window.userId, title, content, language, timestamp: serverTimestamp() };
+        const user = window.auth.currentUser;
+        const newPost = { 
+            userId: window.userId, 
+            authorName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+            authorEmail: user.email || '',
+            title, 
+            content, 
+            language, 
+            timestamp: serverTimestamp() 
+        };
         await addDoc(postsCollectionRef, newPost);
         document.getElementById('post-title').value = '';
         document.getElementById('post-content').value = '';
@@ -259,7 +294,7 @@ window.openPostModal = (postId) => {
     const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     document.getElementById('modal-title').textContent = post.title;
     document.getElementById('modal-content').textContent = post.content;
-    document.getElementById('modal-author-id').textContent = (post.userId || 'unknown').substring(0, 8);
+    document.getElementById('modal-author-id').textContent = post.authorName || 'Anonymous';
     document.getElementById('modal-date').textContent = formattedDate;
     document.getElementById('modal-language').textContent = post.language.charAt(0).toUpperCase() + post.language.slice(1);
     document.getElementById('summarize-button').setAttribute('data-post-id', postId);
@@ -415,6 +450,89 @@ window.renderComfortResults = (recommendationData, sources, error = null) => {
     if (window.lucide) lucide.createIcons();
 };
 
+// --- OAUTH LOG-IN LOGIC ---
+window.signInWithGoogle = async () => {
+    // 1. Create the Google Provider object
+    const provider = new GoogleAuthProvider();
+    
+    try {
+        // 2. Trigger the Google Popup
+        const result = await signInWithPopup(window.auth, provider);
+        console.log("Successfully signed in:", result.user.displayName);
+        
+        // Note: You don't need to manually update the UI here. 
+        // Your 'onAuthStateChanged' listener in initializeFirebase 
+        // will detect the login and update the profile automatically!
+        
+    } catch (error) {
+        console.error("Google Sign-In Error:", error);
+        displayMessage("Login failed: " + error.message, true);
+    }
+};
+
+// Toggle login/signup tabs
+window.showAuthTab = (tab) => {
+    const nameField = document.getElementById('auth-name');
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const tabLogin = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
+    
+    if (tab === 'signup') {
+        nameField.classList.remove('hidden');
+        submitBtn.textContent = 'Create Account';
+        tabLogin.classList.remove('border-b-2', 'border-pastel-primary', 'text-pastel-primary');
+        tabLogin.classList.add('text-gray-400');
+        tabSignup.classList.add('border-b-2', 'border-pastel-primary', 'text-pastel-primary');
+        tabSignup.classList.remove('text-gray-400');
+    } else {
+        nameField.classList.add('hidden');
+        submitBtn.textContent = 'Login';
+        tabSignup.classList.remove('border-b-2', 'border-pastel-primary', 'text-pastel-primary');
+        tabSignup.classList.add('text-gray-400');
+        tabLogin.classList.add('border-b-2', 'border-pastel-primary', 'text-pastel-primary');
+        tabLogin.classList.remove('text-gray-400');
+    }
+    window._authTab = tab;
+};
+
+window.handleEmailAuth = async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const name = document.getElementById('auth-name').value.trim();
+    const isSignup = window._authTab === 'signup';
+    
+    if (!email || !password) {
+        displayMessage('Please enter email and password.', true);
+        return;
+    }
+    
+    try {
+        if (isSignup) {
+            if (!name) { displayMessage('Please enter a display name.', true); return; }
+            const result = await createUserWithEmailAndPassword(window.auth, email, password);
+            // Set their display name immediately after signup
+            await updateProfile(result.user, { displayName: name });
+        } else {
+            await signInWithEmailAndPassword(window.auth, email, password);
+        }
+        // onAuthStateChanged handles the rest
+    } catch (error) {
+        const msg = error.code === 'auth/email-already-in-use' ? 'Email already in use. Try logging in.' 
+                  : error.code === 'auth/wrong-password' ? 'Incorrect password.'
+                  : error.code === 'auth/user-not-found' ? 'No account with that email.'
+                  : error.message;
+        displayMessage(msg, true);
+    }
+};
+
+window.setDisplayName = async () => {
+    const name = document.getElementById('set-name-input')?.value.trim();
+    if (!name) return;
+    await updateProfile(window.auth.currentUser, { displayName: name });
+    displayMessage('Display name saved!');
+    // Re-trigger auth state update
+    window.auth.currentUser.reload();
+};
 
 
 // Expose functions to the HTML buttons
@@ -424,3 +542,7 @@ window.getComfortRecommendations = getComfortRecommendations;
 window.publishPost = publishPost;
 window.openPostModal = openPostModal;
 window.loadMorePosts = loadMorePosts;
+window.signInWithGoogle = signInWithGoogle;
+window.showAuthTab=showAuthTab;
+window.handleEmailAuth=handleEmailAuth;
+window.setDisplayName=setDisplayName;
